@@ -1,5 +1,11 @@
-.env
-.env.development
-.env.local
-.next
+# Dependências e Builds
 node_modules
+.next
+dist
+build
+
+# Variáveis de Ambiente (Bloqueia todos os tipos de .env)
+.env
+.env*.local
+.env.development
+.env.production
