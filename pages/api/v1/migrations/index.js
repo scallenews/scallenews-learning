@@ -3,36 +3,47 @@ import { join } from "node:path";
 import database from "infra/database";
 
 export default async function migrations(request, response) {
-  const dbClient = await database.getNewClient();
-
-  const defaultMigrationOptions = {
-    dbClient: dbClient,
-    dryRun: true,
-    dir: join("infra", "migrations"),
-    direction: "up",
-    verbose: true,
-    migrationsTable: "pgmigrations",
-  };
-
-  if (request.method === "GET") {
-    const pendingMigrations = await migrationRunner(defaultMigrationOptions);
-    await dbClient.end();
-    return response.status(200).json(pendingMigrations);
+  const allowedMethods = ["GET", "POST"];
+  if (!allowedMethods.includes(request.method)) {
+    return response.status(405).json({
+      error: `Method "${request.method}" not allowed`,
+    });
   }
 
-  if (request.method === "POST") {
-    const migreatedMigrations = await migrationRunner({
-      ...defaultMigrationOptions,
-      dryRun: false,
-    });
+  let dbClient;
+  try {
+    dbClient = await database.getNewClient();
 
-    await dbClient.end();
+    const defaultMigrationOptions = {
+      dbClient: dbClient,
+      dryRun: true,
+      dir: join("infra", "migrations"),
+      direction: "up",
+      verbose: true,
+      migrationsTable: "pgmigrations",
+    };
 
-    if (migreatedMigrations.length > 0) {
-      return response.status(201).json(migreatedMigrations);
+    if (request.method === "GET") {
+      const pendingMigrations = await migrationRunner(defaultMigrationOptions);
+      return response.status(200).json(pendingMigrations);
     }
 
-    return response.status(200).json(migreatedMigrations);
+    if (request.method === "POST") {
+      const migreatedMigrations = await migrationRunner({
+        ...defaultMigrationOptions,
+        dryRun: false,
+      });
+
+      if (migreatedMigrations.length > 0) {
+        return response.status(201).json(migreatedMigrations);
+      }
+
+      return response.status(200).json(migreatedMigrations);
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  } finally {
+    await dbClient.end();
   }
-  return response.status(405).end();
 }
