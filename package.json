@@ -10,6 +10,7 @@
     "services:down": "docker compose -f infra/compose.yaml down -v",
     "lint:prettier:check": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
+    "lint:eslint:check": "next lint --dir .",
     "check:env": "node -e \"const { execSync } = require('child_process'); try { const status = execSync('git status --porcelain').toString(); if (status.includes('.env') && !status.includes('.env.example')) { console.error('❌ ALERTA: Arquivo .env detectado no Git! Remova antes de commitar.'); process.exit(1); } else { console.log('✅ Tudo limpo! Nenhum .env exposto para o GitHub.'); } } catch (e) { console.log('⚠️ Git sem arquivos para checar.'); }\"",
     "test": "npm run services:up && npm run check:env && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
     "test:watch": "jest --watchAll --runInBand",
@@ -31,6 +32,10 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^13.1.6",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jest": "^28.6.0",
     "jest": "^29.6.2",
     "prettier": "^3.8.3"
   }
