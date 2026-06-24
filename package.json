@@ -14,7 +14,7 @@
     "lint:prettier:fix": "prettier --write .",
     "lint:eslint:check": "next lint --dir .",
     "check:env": "node -e \"const { execSync } = require('child_process'); try { const status = execSync('git status --porcelain').toString(); if (status.includes('.env') && !status.includes('.env.example')) { console.error('❌ ALERTA: Arquivo .env detectado no Git! Remova antes de commitar.'); process.exit(1); } else { console.log('✅ Tudo limpo! Nenhum .env exposto para o GitHub.'); } } catch (e) { console.log('⚠️ Git sem arquivos para checar.'); }\"",
-    "test": "npm run services:up && npm run check:env && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
+    "test": "npm run services:up && npm run wait-for-postgres && npm run migration:up && npm run check:env && jest --runInBand --detectOpenHandles --forceExit",
     "test:watch": "jest --watchAll --runInBand",
     "migration:create": "node-pg-migrate -m infra/migrations create",
     "migration:up": "node-pg-migrate -m infra/migrations --envPath .env.development up",
