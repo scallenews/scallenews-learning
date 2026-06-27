@@ -1,6 +1,9 @@
 {
   "name": "scallenews-learning",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18 <19"
+  },
   "description": "Repositório de estudos dedicado ao desenvolvimento do projeto ScalleNews.",
   "main": "index.js",
   "scripts": {
