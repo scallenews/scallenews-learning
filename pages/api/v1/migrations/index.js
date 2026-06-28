@@ -1,4 +1,5 @@
-import { default as migrationRunner } from "node-pg-migrate";
+import { runner as migrationRunner } from "node-pg-migrate";
+// import { default as migrationRunner } from "node-pg-migrate";
 import { join } from "node:path";
 import database from "infra/database";
 
