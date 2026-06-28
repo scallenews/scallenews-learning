@@ -8,11 +8,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
-    "test": "npm run services:up && npm run check:env && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
     "test:ci": "NODE_ENV=test jest --runInBand --verbose",
     "test:watch": "jest --watchAll --runInBand",
+    "test": "npm run services:up && npm run check:env && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
     "build": "next build",
     "start": "next start",
+    "posttest": "npm run services:stop",
     "services:up": "docker compose -f infra/compose.yaml up -d",
     "services:stop": "docker compose -f infra/compose.yaml stop",
     "services:down": "docker compose -f infra/compose.yaml down -v",
