@@ -8,6 +8,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
+    "test": "npm run services:up && npm run check:env && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
+    "test:ci": "NODE_ENV=test jest --runInBand --verbose",
+    "test:watch": "jest --watchAll --runInBand",
     "build": "next build",
     "start": "next start",
     "services:up": "docker compose -f infra/compose.yaml up -d",
@@ -22,9 +25,6 @@
     "lint:eslint:check": "eslint .",
     "lint:eslint:fix": "eslint . --fix",
     "check:env": "node -e \"const { execSync } = require('child_process'); try { const status = execSync('git status --porcelain').toString(); if (status.includes('.env') && !status.includes('.env.example')) { console.error('❌ ALERTA: Arquivo .env detectado no Git! Remova antes de commitar.'); process.exit(1); } else { console.log('✅ Tudo limpo! Nenhum .env exposto para o GitHub.'); } } catch (e) { console.log('⚠️ Git sem arquivos para checar.'); }\"",
-    "test": "npm run services:up && npm run check:env && concurrently -n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand --verbose\"",
-    "test:ci": "NODE_ENV=test jest --runInBand --verbose",
-    "test:watch": "jest --watchAll --runInBand",
     "commit": "cz"
   },
   "author": "",
