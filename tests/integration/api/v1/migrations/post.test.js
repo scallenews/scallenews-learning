@@ -1,19 +1,10 @@
 import database from "infra/database";
 import orchestrator from "tests/orchestrator.js";
 
-// Adicionado o parâmetro 90000 ms (90 segundos) no final da função
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await database.query("drop schema public cascade; create schema public;");
 }, 90000);
-
-// import database from "infra/database";
-// import orchestrator from "tests/orchestrator.js";
-
-// beforeAll(async () => {
-//   await orchestrator.waitForAllServices();
-//   await database.query("drop schema public cascade; create schema public;");
-// });
 
 describe("POST /api/v1/migrations", () => {
   describe("Anonymous user", () => {
