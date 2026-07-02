@@ -21,7 +21,7 @@ async function status(request, response) {
   const databaseOpenedConnectionsValue =
     databaseOpenedConnectionsResult.rows[0].count;
 
-  // console.log(databaseOpenedConnectionsValue);
+  console.log(databaseOpenedConnectionsValue);
 
   response.status(200).json({
     updated_at: updatedAt,
