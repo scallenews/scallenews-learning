@@ -13,9 +13,26 @@ describe("POST /api/v1/migrations", () => {
         fetch("http://localhost:3000/api/v1/migrations", { method: "POST" }),
       ]);
 
+      const [body1, body2] = await Promise.all([
+        response1
+          .clone()
+          .json()
+          .catch(() => null),
+        response2
+          .clone()
+          .json()
+          .catch(() => null),
+      ]);
+
       const statuses = [response1.status, response2.status].sort();
-      // Uma delas roda as migrations (201) e a outra encontra tudo já
-      // aplicado (200) — nenhuma pode falhar com 500.
+
+      // Se falhar, isso aparece no log do Jest (visível até no CI)
+      // com o erro real devolvido pela API.
+      if (statuses[0] !== 200 || statuses[1] !== 201) {
+        console.log("DEBUG body1:", body1);
+        console.log("DEBUG body2:", body2);
+      }
+
       expect(statuses).toEqual([200, 201]);
     });
   });
