@@ -6,7 +6,7 @@ export default async function migrations(request, response) {
   const allowedMethods = ["GET", "POST"];
   if (!allowedMethods.includes(request.method)) {
     return response.status(405).json({
-      error: `Method "${request.method}" not allowed`,
+      error: `Method "${request.method}" not allowed.`,
     });
   }
 
@@ -17,7 +17,7 @@ export default async function migrations(request, response) {
     const defaultMigrationOptions = {
       dbClient: dbClient,
       dryRun: true,
-      dir: resolve("infra", "migrations"),
+      dir: resolve(process.cwd(), "infra", "migrations"),
       direction: "up",
       verbose: true,
       migrationsTable: "pgmigrations",
@@ -29,21 +29,26 @@ export default async function migrations(request, response) {
     }
 
     if (request.method === "POST") {
-      const migreatedMigrations = await migrationRunner({
+      const migratedMigrations = await migrationRunner({
         ...defaultMigrationOptions,
         dryRun: false,
       });
 
-      if (migreatedMigrations.length > 0) {
-        return response.status(201).json(migreatedMigrations);
+      if (migratedMigrations.length > 0) {
+        return response.status(201).json(migratedMigrations);
       }
 
-      return response.status(200).json(migreatedMigrations);
+      return response.status(200).json(migratedMigrations);
     }
   } catch (error) {
-    console.error(error);
-    throw error;
+    console.error("Erro no ciclo de execução das migrations:", error);
+    return response.status(500).json({
+      error: "Internal Server Error",
+      message: "Falha ao processar as migrações do banco de dados.",
+    });
   } finally {
-    await dbClient.end();
+    if (dbClient) {
+      await dbClient.end();
+    }
   }
 }
