@@ -1,6 +1,9 @@
 import { runner as migrationRunner } from "node-pg-migrate";
 import { resolve } from "node:path";
+import { readdirSync } from "node:fs";
 import database from "infra/database";
+
+readdirSync(resolve("infra", "migrations"));
 
 const ALLOWED_METHODS = ["GET", "POST"];
 const MIGRATIONS_LOCK_ID = 918273645;
@@ -47,10 +50,6 @@ async function handleGet(response) {
 }
 
 async function handlePost(response) {
-  // Conexão exclusiva para o advisory lock — vive independente da conexão
-  // de migration, para que o lock só seja liberado DEPOIS que a sessão de
-  // migration já tenha encerrado por completo (elimina a janela de corrida
-  // com o lock interno do node-pg-migrate, que é escopado por sessão).
   let lockClient;
   let migrationClient;
 
