@@ -1,5 +1,6 @@
 import { runner as migrationRunner } from "node-pg-migrate";
 import { resolve } from "node:path";
+import fs from "node:fs"; // Importe o módulo nativo de arquivos do Node
 import database from "infra/database";
 
 export default async function migrations(request, response) {
@@ -10,6 +11,10 @@ export default async function migrations(request, response) {
     });
   }
 
+  // TRUQUE DO CURSO.DEV: Força a Vercel a incluir a pasta no bundle de produção
+  const migrationsFolder = resolve(process.cwd(), "infra", "migrations");
+  fs.readdirSync(migrationsFolder);
+
   let dbClient;
   try {
     dbClient = await database.getNewClient();
@@ -17,7 +22,7 @@ export default async function migrations(request, response) {
     const defaultMigrationOptions = {
       dbClient: dbClient,
       dryRun: true,
-      dir: resolve(process.cwd(), "infra", "migrations"),
+      dir: migrationsFolder,
       direction: "up",
       verbose: true,
       migrationsTable: "pgmigrations",
