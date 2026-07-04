@@ -1,7 +1,9 @@
 import { runner as migrationRunner } from "node-pg-migrate";
 import { resolve } from "node:path";
-import fs from "node:fs"; // Módulo nativo do Node
+import fs from "node:fs";
 import database from "infra/database";
+
+const MIGRATIONS_LOCK_ID = 918273645;
 
 export default async function migrations(request, response) {
   const allowedMethods = ["GET", "POST"];
@@ -11,49 +13,68 @@ export default async function migrations(request, response) {
     });
   }
 
-  // TRUQUE DO CURSO.DEV: Força a Vercel a incluir a pasta de migrations no bundle
   const migrationsFolder = resolve(process.cwd(), "infra", "migrations");
   fs.readdirSync(migrationsFolder);
 
-  let dbClient;
-  try {
-    dbClient = await database.getNewClient();
-
-    const defaultMigrationOptions = {
-      dbClient: dbClient,
-      dryRun: true,
-      dir: migrationsFolder,
-      direction: "up",
-      verbose: true,
-      migrationsTable: "pgmigrations",
-    };
-
-    if (request.method === "GET") {
-      const pendingMigrations = await migrationRunner(defaultMigrationOptions);
+  if (request.method === "GET") {
+    let dbClient;
+    try {
+      dbClient = await database.getNewClient();
+      const pendingMigrations = await migrationRunner({
+        dbClient,
+        dryRun: true,
+        dir: migrationsFolder,
+        direction: "up",
+        verbose: true,
+        migrationsTable: "pgmigrations",
+      });
       return response.status(200).json(pendingMigrations);
+    } catch (error) {
+      console.error("Erro ao listar migrations:", error);
+      return response.status(500).json({
+        error: "Internal Server Error",
+        message: "Falha ao processar as migrações do banco de dados.",
+      });
+    } finally {
+      if (dbClient) await dbClient.end();
     }
+  }
 
-    if (request.method === "POST") {
+  if (request.method === "POST") {
+    let lockClient;
+    let migrationClient;
+    try {
+      lockClient = await database.getNewClient();
+      await lockClient.query("SELECT pg_advisory_lock($1);", [
+        MIGRATIONS_LOCK_ID,
+      ]);
+
+      migrationClient = await database.getNewClient();
       const migratedMigrations = await migrationRunner({
-        ...defaultMigrationOptions,
+        dbClient: migrationClient,
         dryRun: false,
+        dir: migrationsFolder,
+        direction: "up",
+        verbose: true,
+        migrationsTable: "pgmigrations",
       });
 
-      if (migratedMigrations.length > 0) {
-        return response.status(201).json(migratedMigrations);
+      const statusCode = migratedMigrations.length > 0 ? 201 : 200;
+      return response.status(statusCode).json(migratedMigrations);
+    } catch (error) {
+      console.error("Erro no ciclo de execução das migrations:", error);
+      return response.status(500).json({
+        error: "Internal Server Error",
+        message: "Falha ao processar as migrações do banco de dados.",
+      });
+    } finally {
+      if (migrationClient) await migrationClient.end();
+      if (lockClient) {
+        await lockClient
+          .query("SELECT pg_advisory_unlock($1);", [MIGRATIONS_LOCK_ID])
+          .catch((e) => console.error("Erro ao liberar lock:", e));
+        await lockClient.end();
       }
-
-      return response.status(200).json(migratedMigrations);
-    }
-  } catch (error) {
-    console.error("Erro no ciclo de execução das migrations:", error);
-    return response.status(500).json({
-      error: "Internal Server Error",
-      message: "Falha ao processar as migrações do banco de dados.",
-    });
-  } finally {
-    if (dbClient) {
-      await dbClient.end();
     }
   }
 }
