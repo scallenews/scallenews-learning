@@ -42,8 +42,9 @@ function getSSLValues() {
   }
 
   if (process.env.NODE_ENV === "production") {
+    // Permite conexão SSL na Vercel contornando a rejeição de certificados autoassinados das PaaS
     return {
-      rejectUnauthorized: true,
+      rejectUnauthorized: false,
     };
   }
 
