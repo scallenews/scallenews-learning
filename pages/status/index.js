@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-assignment */
 import useSWR from "swr";
 
 async function fetchAPI(key) {
