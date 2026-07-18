@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-assignment */
 import useSWR from "swr";
 
 async function fetchAPI(key) {
@@ -45,7 +44,9 @@ function DatabaseStatus() {
         <div>
           Conexões abertas: {data.dependencies.database.opened_connections}
         </div>
-        <div>Conexões máximas: {data.dependencies.database.max_conections}</div>
+        <div>
+          Conexões máximas: {data.dependencies.database.max_connections}
+        </div>
       </>
     );
   }
