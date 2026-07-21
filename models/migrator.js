@@ -15,6 +15,7 @@ async function listPendingMigrations() {
       dryRun: true,
       dir: migrationsFolder,
       direction: "up",
+      log: () => {},
       verbose: true,
       migrationsTable: "pgmigrations",
     });
