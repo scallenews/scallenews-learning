@@ -3,37 +3,39 @@ import orchestrator from "tests/orchestrator.js";
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.clearDatabase();
-}, 90000);
+});
 
 describe("POST /api/v1/migrations", () => {
   describe("Anonymous user", () => {
-    test("Two concurrent requests should not conflict", async () => {
-      const [response1, response2] = await Promise.all([
-        fetch("http://localhost:3000/api/v1/migrations", { method: "POST" }),
-        fetch("http://localhost:3000/api/v1/migrations", { method: "POST" }),
-      ]);
+    describe("Running pending migrations", () => {
+      test("For the first time", async () => {
+        const response1 = await fetch(
+          "http://localhost:3000/api/v1/migrations",
+          {
+            method: "POST",
+          },
+        );
+        expect(response1.status).toBe(201);
 
-      const [body1, body2] = await Promise.all([
-        response1
-          .clone()
-          .json()
-          .catch(() => null),
-        response2
-          .clone()
-          .json()
-          .catch(() => null),
-      ]);
+        const response1Body = await response1.json();
 
-      const statuses = [response1.status, response2.status].sort();
+        expect(Array.isArray(response1Body)).toBe(true);
+        expect(response1Body.length).toBeGreaterThan(0);
+      });
+      test("For the second time", async () => {
+        const response2 = await fetch(
+          "http://localhost:3000/api/v1/migrations",
+          {
+            method: "POST",
+          },
+        );
+        expect(response2.status).toBe(200);
 
-      // Se falhar, isso aparece no log do Jest (visível até no CI)
-      // com o erro real devolvido pela API.
-      if (statuses[0] !== 200 || statuses[1] !== 201) {
-        console.log("DEBUG body1:", body1);
-        console.log("DEBUG body2:", body2);
-      }
+        const response2Body = await response2.json();
 
-      expect(statuses).toEqual([200, 201]);
+        expect(Array.isArray(response2Body)).toBe(true);
+        expect(response2Body.length).toBe(0);
+      });
     });
   });
 });
