@@ -11,7 +11,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/iron" # Atualizado para Node 20 (LTS Iron)
+          node-version: "lts/hydrogen"
 
       - run: npm ci
 
@@ -24,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/iron" # Atualizado para Node 20 (LTS Iron)
+          node-version: "lts/hydrogen"
 
       - run: npm ci
 
@@ -39,8 +39,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/iron" # Atualizado para Node 20 (LTS Iron)
+          node-version: "lts/hydrogen"
 
       - run: npm ci
 
-      - run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+      - run: npx commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
