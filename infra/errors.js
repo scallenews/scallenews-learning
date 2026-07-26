@@ -59,10 +59,9 @@ export class ValidationError extends Error {
     };
   }
 }
-
 export class NotFoundError extends Error {
   constructor({ cause, message, action }) {
-    super(message || "Não foi possível encontrar este recurso no sistema.", {
+    super(message || "Não foi possível encontrar esse recurso no sistema.", {
       cause,
     });
     this.name = "NotFoundError";
