@@ -59,10 +59,9 @@ export class ValidationError extends Error {
     };
   }
 }
-
 export class NotFoundError extends Error {
   constructor({ cause, message, action }) {
-    super(message || "Não foi possível encontrar este recurso no sistema.", {
+    super(message || "Não foi possível encontrar esse recurso no sistema.", {
       cause,
     });
     this.name = "NotFoundError";
@@ -127,7 +126,7 @@ export class MethodNotAllowedError extends Error {
     super("Método não permitido para este endpoint.");
     this.name = "MethodNotAllowedError";
     this.action =
-      "Verifique se o método HTTP enviado é válido para esse endpoint.";
+      "Verifique se o método HTTP enviado é válido para este endpoint.";
     this.statusCode = 405;
   }
 

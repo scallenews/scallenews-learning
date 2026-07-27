@@ -1,4 +1,4 @@
-import { runner as migrationRunner } from "node-pg-migrate";
+import migrationRunner from "node-pg-migrate";
 import { resolve } from "node:path";
 import database from "infra/database";
 
@@ -15,6 +15,7 @@ async function listPendingMigrations() {
       dryRun: true,
       dir: migrationsFolder,
       direction: "up",
+      log: () => {},
       verbose: true,
       migrationsTable: "pgmigrations",
     });
