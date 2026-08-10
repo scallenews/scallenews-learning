@@ -75,7 +75,7 @@ describe("POST /api/v1/users", () => {
         },
         body: JSON.stringify({
           username: "emailduplicado2",
-          email: "Duplicado@curso.dev",
+          email: "Duplicado@scalle.app.br",
           password: "senha123",
         }),
       });
