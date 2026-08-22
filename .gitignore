@@ -9,3 +9,4 @@ build
 .env*.local
 .env.development
 .env.production
+.DS_Store
