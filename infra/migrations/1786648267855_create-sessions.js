@@ -2,8 +2,8 @@ exports.up = (pgm) => {
   pgm.createTable("sessions", {
     id: {
       type: "uuid",
-      default: pgm.func("gen_random_uuid()"),
       primaryKey: true,
+      default: pgm.func("gen_random_uuid()"),
     },
 
     token: {
@@ -17,6 +17,7 @@ exports.up = (pgm) => {
       notNull: true,
     },
 
+    // Why timestamp with timezone? https://justatheory.com/2012/04/postgres-use-timestamptz/
     expires_at: {
       type: "timestamptz",
       notNull: true,
@@ -35,5 +36,4 @@ exports.up = (pgm) => {
     },
   });
 };
-
 exports.down = false;
