@@ -2,10 +2,10 @@ import user from "models/user.js";
 import password from "models/password.js";
 import { NotFoundError, UnauthorizedError } from "infra/errors";
 
-async function getAuthenticatedUser(providedEmail, providedPassowrd) {
+async function getAuthenticatedUser(providedEmail, providedPassword) {
   try {
     const storedUser = await findOneByEmail(providedEmail);
-    await validatePassword(providedPassowrd, storedUser.password);
+    await validatePassword(providedPassword, storedUser.password);
 
     return storedUser;
   } catch (error) {
@@ -38,16 +38,16 @@ async function getAuthenticatedUser(providedEmail, providedPassowrd) {
     return storedUser;
   }
 
-  async function validatePassword(providedPassowrd, storedPassword) {
+  async function validatePassword(providedPassword, storedPassword) {
     const correctPasswordMatch = await password.compare(
-      providedPassowrd,
+      providedPassword,
       storedPassword,
     );
 
     if (!correctPasswordMatch) {
       throw new UnauthorizedError({
         message: "Senha não confere.",
-        action: "Verifique se este dados está correto.",
+        action: "Verifique se este dado está correto.",
       });
     }
   }
