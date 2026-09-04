@@ -43,8 +43,14 @@ describe("GET /api/v1/user", () => {
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
       // Sessions renewal assertions
+      const parsedSetCookie = setCookieParser(response, {
+        map: true,
+      });
+      const newToken = parsedSetCookie.session_id.value;
+      expect(newToken).not.toBe(sessionObject.token);
+
       const renewedSessionObject = await session.findOneValidByToken(
-        sessionObject.token,
+        newToken,
       );
       expect(
         renewedSessionObject.expires_at > sessionObject.expires_at,
@@ -52,14 +58,12 @@ describe("GET /api/v1/user", () => {
       expect(
         renewedSessionObject.updated_at > sessionObject.updated_at,
       ).toEqual(true);
+      expect(renewedSessionObject.token).toBe(newToken);
 
       // Set-Cookie assertions
-      const parsedSetCookie = setCookieParser(response, {
-        map: true,
-      });
       expect(parsedSetCookie.session_id).toEqual({
         name: "session_id",
-        value: sessionObject.token,
+        value: newToken,
         maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
         path: "/",
         httpOnly: true,
