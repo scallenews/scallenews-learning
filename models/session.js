@@ -1,15 +1,8 @@
 import crypto from "node:crypto";
-import { promisify } from "node:util";
 import database from "infra/database.js";
-import { UnauthorizedError } from "infra/errors.js";
+import { UnauthorizedError } from "infra/errors";
 
-const randomBytesAsync = promisify(crypto.randomBytes);
-
-const ONE_SECOND_IN_MS = 1000;
-const ONE_MINUTE_IN_MS = 60 * ONE_SECOND_IN_MS;
-const ONE_HOUR_IN_MS = 60 * ONE_MINUTE_IN_MS;
-const ONE_DAY_IN_MS = 24 * ONE_HOUR_IN_MS;
-const EXPIRATION_IN_MILLISECONDS = 30 * ONE_DAY_IN_MS; // 30 Days
+const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 Days
 
 async function findOneValidByToken(sessionToken) {
   const sessionFound = await runSelectQuery(sessionToken);
@@ -20,7 +13,7 @@ async function findOneValidByToken(sessionToken) {
     const results = await database.query({
       text: `
         SELECT
-          id, token, user_id, expires_at, created_at, updated_at
+          *
         FROM
           sessions
         WHERE
@@ -28,7 +21,7 @@ async function findOneValidByToken(sessionToken) {
           AND expires_at > NOW()
         LIMIT
           1
-      ;`,
+      `,
       values: [sessionToken],
     });
 
@@ -44,16 +37,11 @@ async function findOneValidByToken(sessionToken) {
 }
 
 async function create(userId) {
-  const token = await generateToken();
+  const token = crypto.randomBytes(48).toString("hex");
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
   const newSession = await runInsertQuery(token, userId, expiresAt);
   return newSession;
-
-  async function generateToken() {
-    const buffer = await randomBytesAsync(48);
-    return buffer.toString("hex");
-  }
 
   async function runInsertQuery(token, userId, expiresAt) {
     const results = await database.query({
@@ -63,8 +51,8 @@ async function create(userId) {
         VALUES
           ($1, $2, $3)
         RETURNING
-          id, token, user_id, expires_at, created_at, updated_at
-      ;`,
+          *
+      `,
       values: [token, userId, expiresAt],
     });
 
@@ -73,33 +61,32 @@ async function create(userId) {
 }
 
 async function renew(sessionId) {
+  const token = crypto.randomBytes(48).toString("hex");
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
-  const renewedSessionObject = await runUpdateQuery(sessionId, expiresAt);
+  const renewedSessionObject = await runUpdateQuery(
+    sessionId,
+    token,
+    expiresAt,
+  );
   return renewedSessionObject;
 
-  async function runUpdateQuery(sessionId, expiresAt) {
+  async function runUpdateQuery(sessionId, token, expiresAt) {
     const results = await database.query({
       text: `
         UPDATE
           sessions
         SET
-          expires_at = $2,
+          token = $2,
+          expires_at = $3,
           updated_at = NOW()
         WHERE
           id = $1
         RETURNING
-          id, token, user_id, expires_at, created_at, updated_at
-        ;`,
-      values: [sessionId, expiresAt],
+          *
+      `,
+      values: [sessionId, token, expiresAt],
     });
-
-    if (results.rowCount === 0) {
-      throw new UnauthorizedError({
-        message: "Sessão não encontrada.",
-        action: "Verifique se o ID da sessão está correto.",
-      });
-    }
 
     return results.rows[0];
   }
@@ -115,22 +102,15 @@ async function expireById(sessionId) {
         UPDATE
           sessions
         SET
-          expires_at = NOW() - interval '1 second',
+          expires_at = NOW(),
           updated_at = NOW()
         WHERE
           id = $1
         RETURNING
-          id, token, user_id, expires_at, created_at, updated_at
-        ;`,
+          *
+      `,
       values: [sessionId],
     });
-
-    if (results.rowCount === 0) {
-      throw new UnauthorizedError({
-        message: "Sessão não encontrada.",
-        action: "Verifique se o ID da sessão está correto.",
-      });
-    }
 
     return results.rows[0];
   }
