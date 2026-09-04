@@ -64,7 +64,11 @@ async function renew(sessionId) {
   const token = crypto.randomBytes(48).toString("hex");
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
-  const renewedSessionObject = await runUpdateQuery(sessionId, token, expiresAt);
+  const renewedSessionObject = await runUpdateQuery(
+    sessionId,
+    token,
+    expiresAt,
+  );
   return renewedSessionObject;
 
   async function runUpdateQuery(sessionId, token, expiresAt) {

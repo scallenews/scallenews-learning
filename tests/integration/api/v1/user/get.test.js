@@ -49,9 +49,7 @@ describe("GET /api/v1/user", () => {
       const newToken = parsedSetCookie.session_id.value;
       expect(newToken).not.toBe(sessionObject.token);
 
-      const renewedSessionObject = await session.findOneValidByToken(
-        newToken,
-      );
+      const renewedSessionObject = await session.findOneValidByToken(newToken);
       expect(
         renewedSessionObject.expires_at > sessionObject.expires_at,
       ).toEqual(true);
