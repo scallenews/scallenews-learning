@@ -1,4 +1,4 @@
-import email from "infra/email";
+import email from "infra/email.js";
 import orchestrator from "tests/orchestrator.js";
 
 beforeAll(async () => {
@@ -11,14 +11,14 @@ describe("infra/email.js", () => {
 
     await email.send({
       from: "ScalleApp <contato@scalle.app.br>",
-      to: "contato@curso.dev",
+      to: "contato@scallemusic.com.br",
       subject: "Teste de assunto",
       text: "Teste de corpo.",
     });
 
     await email.send({
       from: "ScalleApp <contato@scalle.app.br>",
-      to: "contato@curso.dev",
+      to: "contato@scallemusic.com.br",
       subject: "Ultimo email enviado",
       text: "Corpo do ultimo email.",
     });
@@ -26,7 +26,7 @@ describe("infra/email.js", () => {
     const lastEmail = await orchestrator.getLastEmail();
 
     expect(lastEmail.sender).toBe("<contato@scalle.app.br>");
-    expect(lastEmail.recipients[0]).toBe("<contato@curso.dev>");
+    expect(lastEmail.recipients[0]).toBe("<contato@scallemusic.com.br>");
     expect(lastEmail.subject).toBe("Ultimo email enviado");
     expect(lastEmail.text).toBe("Corpo do ultimo email.\n");
   });
